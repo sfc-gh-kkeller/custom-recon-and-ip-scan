@@ -21,6 +21,16 @@ New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A tas
 
 Thresholds are in `RT_CONFIG`. The task is created suspended; resume it with `ALTER TASK SCAN_REALTIME_TASK RESUME;`. `INFORMATION_SCHEMA` only covers the last 7 days and returns at most 10,000 rows per call, so very busy accounts can be truncated.
 
+## Containment and Cortex Agent
+
+[`sql/07_containment.sql`](sql/07_containment.sql) and [`agents/containment_agent.agent.yaml`](agents/containment_agent.agent.yaml) add guarded actions for flagged users. Everything is limited to the users in `WATCHED_USERS`.
+
+- `CONTAIN_USER(user, action, requested_by, confirmed)` supports `ABORT_QUERIES`, `DISABLE_USER` and `ENABLE_USER`. It refuses users who are not on the watchlist, users listed in `PROTECTED_USERS` (add admins and break-glass accounts there), and `DISABLE_USER` unless `confirmed` is true. Every call, including refusals, is written to `CONTAINMENT_LOG`.
+- `AUTO_CONTAIN()` (run by the suspended `AUTO_CONTAIN_TASK`) aborts running queries for users with `WATCHED_USERS.AUTO_CONTAIN = TRUE` who have a HIGH finding and findings from at least two different scanners in the last 60 minutes.
+- The `CONTAINMENT_AGENT` Cortex Agent has two tools, `get_flagged_users` and `contain_user`. Its instructions require a human yes before it disables anyone. The `confirmed` flag is a guardrail, not authentication, and findings are treated as untrusted text.
+
+The procedures run as owner (ACCOUNTADMIN in this demo) because `ALTER USER` needs it; use a dedicated role in production. Create the agent from the YAML (replace the placeholders) with `CREATE AGENT ... FROM SPECIFICATION`, and grant `USAGE` on the agent to the people who should chat with it.
+
 ## Data movement policy and violation alert
 
 [`sql/03_data_movement_policy.sql`](sql/03_data_movement_policy.sql) creates a sample `PROGRAMMATIC_FETCH` policy (alert above 75 rows, block above 300) and attaches it to the account. It is account-wide, so review it before running; `ALTER ACCOUNT UNSET DATA MOVEMENT POLICY;` removes it.
@@ -37,7 +47,8 @@ Thresholds are in `RT_CONFIG`. The task is created suspended; resume it with `AL
 4. Optional alert: replace the same placeholders in [`sql/04_dmp_violation_alert.sql`](sql/04_dmp_violation_alert.sql), run it with `snow sql -c <connection> -f`, then `ALTER ALERT DMP_VIOLATION_ALERT RESUME;` (alerts are created suspended)
 5. Optional real-time block alert: same steps with `sql/05_dmp_block_alert_realtime.sql`, then `ALTER ALERT DMP_BLOCK_ALERT_REALTIME RESUME;`
 6. Optional real-time scanner: replace the placeholders (including `<YOUR_WATCHED_USER>`) in `sql/06_realtime_scanner_information_schema.sql` and run it after step 2
-7. Cleanup: `sql/99_teardown.sql`
+7. Optional containment and agent: replace the placeholders in `sql/07_containment.sql` and `agents/containment_agent.agent.yaml`, run the SQL after step 6, then create the agent
+8. Cleanup: `sql/99_teardown.sql`
 
 Requires ACCOUNTADMIN (or equivalent) and `SNOWFLAKE.ACCOUNT_USAGE` access.
 
