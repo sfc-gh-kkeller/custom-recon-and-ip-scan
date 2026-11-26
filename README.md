@@ -53,7 +53,7 @@ flowchart LR
 
 ## Quick start
 
-You need ACCOUNTADMIN (or equivalent), the [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index), and `SNOWFLAKE.ACCOUNT_USAGE` access. Data movement policies need Enterprise Edition. Every SQL file uses placeholders (`<YOUR_DB>`, `<YOUR_WAREHOUSE>`, `<YOUR_VERIFIED_EMAIL>`, `<YOUR_WATCHED_USER>`, `<YOUR_PROTECTED_USER>`): replace them first. The email address must belong to a verified user in the account.
+You need ACCOUNTADMIN (or equivalent), the Snowflake CLI (`snow`), and `SNOWFLAKE.ACCOUNT_USAGE` access. Data movement policies need Enterprise Edition. Every SQL file uses placeholders (`<YOUR_DB>`, `<YOUR_WAREHOUSE>`, `<YOUR_VERIFIED_EMAIL>`, `<YOUR_WATCHED_USER>`, `<YOUR_PROTECTED_USER>`): replace them first. The email address must belong to a verified user in the account.
 
 | Step | Run | Needs |
 |---|---|---|
@@ -65,10 +65,11 @@ You need ACCOUNTADMIN (or equivalent), the [Snowflake CLI](https://docs.snowflak
 | 6. Violation alerts (optional) | `sql/04_dmp_violation_alert.sql`, `sql/05_dmp_block_alert_realtime.sql` | 3 |
 | 7. Dashboard (optional) | see [`dashboard/README.md`](dashboard/README.md) | 4 |
 
-Run `sql/02_demo_run.sql` with the `TRUST_SCANNER` schema selected (`USE SCHEMA <YOUR_DB>.TRUST_SCANNER;`). Tasks and alerts are created suspended. Start them when you are ready:
+Run `sql/02_demo_run.sql` with the `TRUST_SCANNER` schema selected (`USE SCHEMA <YOUR_DB>.TRUST_SCANNER;`). The hourly `SCAN_TASK` from step 1 starts running right away. Everything else is created suspended, so start it when you are ready:
 
 ```sql
 ALTER TASK SCAN_REALTIME_TASK RESUME;
+ALTER TASK AUTO_CONTAIN_TASK RESUME;           -- optional: automatic containment of opted-in users
 ALTER ALERT DMP_VIOLATION_ALERT RESUME;
 ALTER ALERT DMP_BLOCK_ALERT_REALTIME RESUME;
 ```
