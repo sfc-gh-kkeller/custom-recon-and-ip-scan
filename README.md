@@ -9,6 +9,8 @@ A Trust Center-style scanner built with plain Snowflake objects (not a Native Ap
 
 New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A task runs the scan hourly.
 
+`sql/04_dmp_violation_alert.sql` adds a Snowflake alert, `DMP_VIOLATION_ALERT`, that emails new rows from `SNOWFLAKE.ACCOUNT_USAGE.DATA_MOVEMENT_VIOLATIONS` every 60 minutes. It tracks the last notified time in `DMP_ALERT_STATE` so each violation is sent once. Violations appear in ACCOUNT_USAGE with up to 3 hours of latency.
+
 ## Deploy (Snowflake CLI)
 
 1. Edit `sql/01_deploy.sql`: replace `<YOUR_DB>`, `<YOUR_WAREHOUSE>`, `<YOUR_VERIFIED_EMAIL>` (must be a verified user email in the account).
