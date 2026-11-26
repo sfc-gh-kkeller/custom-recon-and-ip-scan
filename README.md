@@ -19,6 +19,12 @@ New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A tas
 | `RT_UNEXPECTED_CLIENT` | Client types such as `PYTHON_DRIVER` instead of `ODBC`: checked against the per-user `EXPECTED_CLIENTS` allowlist when one exists, otherwise against the client types the user normally uses |
 | `RT_RECON` | `SHOW`/`DESCRIBE`/metadata-view enumeration |
 
+### Defining the watched population
+
+- Add user names to `WATCHED_USERS` directly (`SOURCE = 'MANUAL'`).
+- Or add role names to `WATCHED_ROLES`: `SYNC_WATCHED_ROLES()` runs at the start of every scan and adds everyone directly granted those roles (`SOURCE = 'ROLE'`), and removes them when the grant is revoked. Role hierarchies are not expanded, and manual rows are never touched.
+- The data movement alerts (`04`, `05`) report only watched users too, so run `06` before them.
+
 Thresholds are in `RT_CONFIG`. The task is created suspended; resume it with `ALTER TASK SCAN_REALTIME_TASK RESUME;`. `INFORMATION_SCHEMA` only covers the last 7 days and returns at most 10,000 rows per call, so very busy accounts can be truncated.
 
 ## Containment and Cortex Agent

@@ -1,6 +1,6 @@
 -- Near-real-time alert on BLOCKED data movement (error 100168) using INFORMATION_SCHEMA.QUERY_HISTORY,
 -- which has no ACCOUNT_USAGE latency. It cannot see alert-only (allowed) events; use
--- 04_dmp_violation_alert.sql for those. Requires a role with MONITOR on the account (ACCOUNTADMIN here).
+-- 04_dmp_violation_alert.sql for those. Only users on TRUST_SCANNER.WATCHED_USERS (created in 06) are reported. Requires a role with MONITOR on the account (ACCOUNTADMIN here).
 USE ROLE ACCOUNTADMIN;
 USE DATABASE <YOUR_DB>;
 CREATE SCHEMA IF NOT EXISTS DMP_DEMO;
@@ -39,6 +39,7 @@ CREATE OR REPLACE ALERT DMP_BLOCK_ALERT_REALTIME
            END_TIME_RANGE_START => DATEADD('hour', -1, SNOWFLAKE.ALERT.SCHEDULED_TIME()),
            RESULT_LIMIT => 10000))
     WHERE ERROR_CODE = 100168
+      AND UPPER(USER_NAME) IN (SELECT UPPER(USER_NAME) FROM <YOUR_DB>.TRUST_SCANNER.WATCHED_USERS)
       AND START_TIME >= SNOWFLAKE.ALERT.LAST_SUCCESSFUL_SCHEDULED_TIME()
       AND START_TIME < SNOWFLAKE.ALERT.SCHEDULED_TIME()
   ))
