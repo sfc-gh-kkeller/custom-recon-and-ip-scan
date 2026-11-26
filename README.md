@@ -9,7 +9,9 @@ A Trust Center-style scanner built with plain Snowflake objects (not a Native Ap
 
 New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A task runs the scan hourly.
 
-## Data movement violation alert
+## Data movement policy and violation alert
+
+[`sql/03_data_movement_policy.sql`](sql/03_data_movement_policy.sql) creates a sample `PROGRAMMATIC_FETCH` policy (alert above 75 rows, block above 300) and attaches it to the account. It is account-wide, so review it before running; `ALTER ACCOUNT UNSET DATA MOVEMENT POLICY;` removes it.
 
 [`sql/04_dmp_violation_alert.sql`](sql/04_dmp_violation_alert.sql) adds a Snowflake alert, `DMP_VIOLATION_ALERT`, that emails new rows from `SNOWFLAKE.ACCOUNT_USAGE.DATA_MOVEMENT_VIOLATIONS` every 60 minutes. It tracks the last notified time in `DMP_ALERT_STATE` so each violation is sent once. Violations appear in ACCOUNT_USAGE with up to 3 hours of latency.
 
