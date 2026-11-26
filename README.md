@@ -9,14 +9,17 @@ A Trust Center-style scanner built with plain Snowflake objects (not a Native Ap
 
 New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A task runs the scan hourly.
 
-`sql/04_dmp_violation_alert.sql` adds a Snowflake alert, `DMP_VIOLATION_ALERT`, that emails new rows from `SNOWFLAKE.ACCOUNT_USAGE.DATA_MOVEMENT_VIOLATIONS` every 60 minutes. It tracks the last notified time in `DMP_ALERT_STATE` so each violation is sent once. Violations appear in ACCOUNT_USAGE with up to 3 hours of latency.
+## Data movement violation alert
+
+[`sql/04_dmp_violation_alert.sql`](sql/04_dmp_violation_alert.sql) adds a Snowflake alert, `DMP_VIOLATION_ALERT`, that emails new rows from `SNOWFLAKE.ACCOUNT_USAGE.DATA_MOVEMENT_VIOLATIONS` every 60 minutes. It tracks the last notified time in `DMP_ALERT_STATE` so each violation is sent once. Violations appear in ACCOUNT_USAGE with up to 3 hours of latency.
 
 ## Deploy (Snowflake CLI)
 
 1. Edit `sql/01_deploy.sql`: replace `<YOUR_DB>`, `<YOUR_WAREHOUSE>`, `<YOUR_VERIFIED_EMAIL>` (must be a verified user email in the account).
 2. `snow sql -c <connection> -f sql/01_deploy.sql`
 3. `snow sql -c <connection> -f sql/02_demo_run.sql` (run inside the `TRUST_SCANNER` schema)
-4. Cleanup: `sql/99_teardown.sql`
+4. Optional alert: replace the same placeholders in [`sql/04_dmp_violation_alert.sql`](sql/04_dmp_violation_alert.sql), run it with `snow sql -c <connection> -f`, then `ALTER ALERT DMP_VIOLATION_ALERT RESUME;` (alerts are created suspended)
+5. Cleanup: `sql/99_teardown.sql`
 
 Requires ACCOUNTADMIN (or equivalent) and `SNOWFLAKE.ACCOUNT_USAGE` access.
 
