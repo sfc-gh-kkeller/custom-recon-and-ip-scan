@@ -9,6 +9,18 @@ A Trust Center-style scanner built with plain Snowflake objects (not a Native Ap
 
 New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A task runs the scan hourly.
 
+[`sql/06_realtime_scanner_information_schema.sql`](sql/06_realtime_scanner_information_schema.sql) adds a near-real-time scanner (`SCAN_REALTIME`, run by `SCAN_REALTIME_TASK` every 5 minutes) built on `INFORMATION_SCHEMA` table functions, so there is no `ACCOUNT_USAGE` latency. It only looks at users listed in `WATCHED_USERS` and writes to `FINDINGS`:
+
+| Scanner | Detects |
+|---|---|
+| `RT_IP_HOPPING` | Successful logins from many distinct IPs |
+| `RT_FAILED_LOGINS` | Repeated failed logins |
+| `RT_LOGIN_BURST` | Sudden volume (default 50 attempts, success or failure, any number of IPs), many attempts from a single IP (default 20), or a spike versus the user's own baseline (default 5x) |
+| `RT_UNEXPECTED_CLIENT` | Client types such as `PYTHON_DRIVER` instead of `ODBC`: checked against the per-user `EXPECTED_CLIENTS` allowlist when one exists, otherwise against the client types the user normally uses |
+| `RT_RECON` | `SHOW`/`DESCRIBE`/metadata-view enumeration |
+
+Thresholds are in `RT_CONFIG`. The task is created suspended; resume it with `ALTER TASK SCAN_REALTIME_TASK RESUME;`. `INFORMATION_SCHEMA` only covers the last 7 days and returns at most 10,000 rows per call, so very busy accounts can be truncated.
+
 ## Data movement policy and violation alert
 
 [`sql/03_data_movement_policy.sql`](sql/03_data_movement_policy.sql) creates a sample `PROGRAMMATIC_FETCH` policy (alert above 75 rows, block above 300) and attaches it to the account. It is account-wide, so review it before running; `ALTER ACCOUNT UNSET DATA MOVEMENT POLICY;` removes it.
@@ -24,7 +36,8 @@ New findings are stored in `FINDINGS` and emailed via `SYSTEM$SEND_EMAIL`. A tas
 3. `snow sql -c <connection> -f sql/02_demo_run.sql` (run inside the `TRUST_SCANNER` schema)
 4. Optional alert: replace the same placeholders in [`sql/04_dmp_violation_alert.sql`](sql/04_dmp_violation_alert.sql), run it with `snow sql -c <connection> -f`, then `ALTER ALERT DMP_VIOLATION_ALERT RESUME;` (alerts are created suspended)
 5. Optional real-time block alert: same steps with `sql/05_dmp_block_alert_realtime.sql`, then `ALTER ALERT DMP_BLOCK_ALERT_REALTIME RESUME;`
-6. Cleanup: `sql/99_teardown.sql`
+6. Optional real-time scanner: replace the placeholders (including `<YOUR_WATCHED_USER>`) in `sql/06_realtime_scanner_information_schema.sql` and run it after step 2
+7. Cleanup: `sql/99_teardown.sql`
 
 Requires ACCOUNTADMIN (or equivalent) and `SNOWFLAKE.ACCOUNT_USAGE` access.
 
