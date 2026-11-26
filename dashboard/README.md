@@ -10,6 +10,14 @@
 
 # Watchtower
 
+![Watchtower demo: a quiet account, a login burst, then abort and disable of the flagged user](../docs/images/watchtower-demo.gif)
+
+*Synthetic demo data: a quiet account, a login burst against a service user, then abort queries and a typed-name confirmation to disable it.*
+
+| Burst, dark | Disable confirmation |
+|---|---|
+| ![Watchtower during a login burst](../docs/images/watchtower-dark.png) | ![Disable confirmation dialog](../docs/images/watchtower-disable-dialog.png) |
+
 Real-time dashboard for the watched-user scanner in this repository, built on Snowflake App Runtime (Next.js). It polls every 15 to 120 seconds and has a Live/Paused switch and a time window (15 min to 12 hours) kept in the URL.
 
 | Panel | Source | Freshness |
@@ -68,6 +76,17 @@ The first build takes several minutes, and the endpoint can take a few more to a
 - `INFORMATION_SCHEMA` login and query functions cover 7 days and return at most 10,000 rows per call, before the watchlist filter.
 - The live blocked-movement panel is capped at 3 hours because the account-wide query-history scan gets slow quickly (3 hours took about 18 seconds and 23 hours over 5 minutes in testing).
 - Every panel polls on a warehouse, so each open dashboard keeps `<YOUR_WAREHOUSE>` busy. Use Paused when nobody is watching.
+
+## Regenerate the screenshots and GIF
+
+`scripts/capture_demo.py` serves made-up users and numbers by intercepting the dashboard's `/api` calls in the browser, so nothing from a real account appears in the images.
+
+```bash
+npm run build && npm run start -- -p 3100        # a production server has no dev overlay
+uv run --with playwright --with pillow python scripts/capture_demo.py http://localhost:3100/ ../docs/images
+```
+
+Run `uv run --with playwright playwright install chromium` once if Chromium is missing.
 
 ## Tests
 
