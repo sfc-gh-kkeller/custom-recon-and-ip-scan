@@ -1,0 +1,50 @@
+# Replace the placeholders (see README: Deploy). `snow app setup --dry-run` shows the values for your account.
+# created-by: snowflake-apps-create; template=nextjs-template; skill-version=1.0.0
+version: 2
+
+name: WATCHTOWER
+database: <YOUR_DB>
+schema: <YOUR_APP_SCHEMA>
+query_warehouse: <YOUR_WAREHOUSE>
+
+runtime: node
+
+install:
+  commands:
+    - ["npm", "ci", "--include=dev"]
+
+build:
+  commands:
+    - ["npm", "run", "build"]
+    # For standalone mode
+    - ["cp", "-r", ".next/static", ".next/standalone/.next/static"]
+    - ["cp", "-r", "public", ".next/standalone/public"]
+    # Avoid packaging extra node_modules since standalone includes its own
+    - ["rm", "-rf", "node_modules"]
+
+run:
+  command: ["node", ".next/standalone/server.js"]
+
+label: "Watchtower"
+description: "Real-time monitor for watched Snowflake users: logins, findings, blocked data movement and containment."
+icon: "public/icon.svg"
+
+# Where the scanner objects live. The app reads them as the app's service identity (owner's rights).
+environment_variables:
+  - name: SCANNER_DB
+    value: "<YOUR_DB>"
+  - name: SCANNER_SCHEMA
+    value: "TRUST_SCANNER"
+  - name: ALERT_SCHEMA
+    value: "DMP_DEMO"
+
+ignore:
+  - node_modules
+  - .env*
+  - __pycache__
+  - "*.pyc"
+  - .next
+  - .git
+  - snowflake.log
+  - output
+  - "*.tsbuildinfo"

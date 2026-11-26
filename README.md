@@ -37,6 +37,10 @@ Thresholds are in `RT_CONFIG`. The task is created suspended; resume it with `AL
 
 The procedures run as owner (ACCOUNTADMIN in this demo) because `ALTER USER` needs it; use a dedicated role in production. Create the agent from the YAML (replace the placeholders) with `CREATE AGENT ... FROM SPECIFICATION`, and grant `USAGE` on the agent to the people who should chat with it.
 
+## Real-time dashboard
+
+[`dashboard/`](dashboard/) is a Snowflake App Runtime (Next.js) dashboard called Watchtower. It shows the watched users' login timeline, findings, blocked data movement, scanner status and the containment log, and lets an analyst abort queries, disable or re-enable a flagged user through `CONTAIN_USER`. See [`dashboard/README.md`](dashboard/README.md) for deploy steps and the owner's-rights caveat.
+
 ## Data movement policy and violation alert
 
 [`sql/03_data_movement_policy.sql`](sql/03_data_movement_policy.sql) creates a sample `PROGRAMMATIC_FETCH` policy (alert above 75 rows, block above 300) and attaches it to the account. It is account-wide, so review it before running; `ALTER ACCOUNT UNSET DATA MOVEMENT POLICY;` removes it.
@@ -54,7 +58,8 @@ The procedures run as owner (ACCOUNTADMIN in this demo) because `ALTER USER` nee
 5. Optional real-time block alert: same steps with `sql/05_dmp_block_alert_realtime.sql`, then `ALTER ALERT DMP_BLOCK_ALERT_REALTIME RESUME;`
 6. Optional real-time scanner: replace the placeholders (including `<YOUR_WATCHED_USER>`) in `sql/06_realtime_scanner_information_schema.sql` and run it after step 2
 7. Optional containment and agent: replace the placeholders in `sql/07_containment.sql` and `agents/containment_agent.agent.yaml`, run the SQL after step 6, then create the agent
-8. Cleanup: `sql/99_teardown.sql`
+8. Optional dashboard: see `dashboard/README.md`
+9. Cleanup: `sql/99_teardown.sql` (and `snow app teardown --force` for the dashboard)
 
 Requires ACCOUNTADMIN (or equivalent) and `SNOWFLAKE.ACCOUNT_USAGE` access.
 

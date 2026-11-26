@@ -1,0 +1,194 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* dark: utilities follow the .dark class set by components/theme-provider.tsx */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * THEMING
+ * -------
+ * Every color is a CSS variable: light values in :root, dark overrides in .dark.
+ * These are a neutral starting point, not a house style. Replace them with the
+ * app's own palette (both blocks); components, focus rings and charts follow.
+ * Use tokens (bg-card, text-muted-foreground, border, bg-chart-2...) rather than
+ * hard-coded colors so dark mode keeps working.
+ */
+
+@layer base {
+  :root {
+    /* Paper-and-ink light theme for the radar room. */
+    --brand: #0b7a55;
+
+    --background: #eef0e8;
+    --foreground: #0d2620;
+    --card: #f7f8f2;
+    --card-foreground: #0d2620;
+    --popover: #f7f8f2;
+    --popover-foreground: #0d2620;
+
+    --primary: #0b7a55;
+    --primary-foreground: #f4fff9;
+    --secondary: #e1e6da;
+    --secondary-foreground: #0d2620;
+    --muted: #e6eadf;
+    --muted-foreground: #4d6a60;
+    --accent: #dde4d4;
+    --accent-foreground: #0d2620;
+    --destructive: #c4283a;
+    --destructive-foreground: #ffffff;
+    --border: #cdd6c6;
+    --input: #bcc8b5;
+    --ring: #0b7a55;
+    --radius: 0.375rem;
+
+    --success: #0b7a55;
+    --warning: #a85f00;
+
+    --chart-1: #0b9a6a;
+    --chart-2: #b97500;
+    --chart-3: #c4283a;
+    --chart-4: #1b7fa8;
+    --chart-5: #7a4fbf;
+    --chart-grid: #d5dccd;
+    --chart-axis: #55736a;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-brand: var(--brand);
+  /* System font stacks by default; each app picks its own fonts (README, Designing the app). */
+  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Oswald Variable', 'Arial Narrow', ui-sans-serif, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  .dark {
+    --background: #060c0b;
+    --foreground: #d6ece4;
+    --card: #0b1413;
+    --card-foreground: #d6ece4;
+    --popover: #0f1b19;
+    --popover-foreground: #d6ece4;
+    --primary: #3ddc97;
+    --primary-foreground: #04120c;
+    --secondary: #12201d;
+    --secondary-foreground: #d6ece4;
+    --muted: #0e1a18;
+    --muted-foreground: #86a99c;
+    --accent: #152623;
+    --accent-foreground: #d6ece4;
+    --destructive: #ff5b6b;
+    --destructive-foreground: #1a0206;
+    --border: #17302b;
+    --input: #1f3d36;
+    --ring: #3ddc97;
+    --success: #3ddc97;
+    --warning: #ffb020;
+    --brand: #3ddc97;
+    --chart-1: #3ddc97;
+    --chart-2: #ffb020;
+    --chart-3: #ff5b6b;
+    --chart-4: #4cc9f0;
+    --chart-5: #b794f6;
+    --chart-grid: #112420;
+    --chart-axis: #7a9d91;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Motion: sections rise in once; bars grow from their baseline. Off under reduced motion. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@utility animate-rise {
+  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@utility animate-grow-x {
+  animation: grow-x 800ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: left;
+}
+@keyframes ping-now {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@utility animate-ping-now {
+  animation: ping-now 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+/* Radar-room backdrop: a faint grid behind the hero only. */
+.radar-grid {
+  background-image:
+    linear-gradient(var(--chart-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--chart-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-grow-x,
+  .animate-ping-now {
+    animation: none;
+  }
+}
